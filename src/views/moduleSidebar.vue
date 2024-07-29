@@ -102,6 +102,10 @@
                         </div>
                     </div>
 
+                    <div class="absolute bottom-4 right-4">
+                        <button class="bg-red-600 text-white py-1 px-2" @click="deleteDeal()">delete</button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -175,6 +179,11 @@ function addComment(){
     })
 
     comment.value = ''
+}
+
+async function deleteDeal(){
+    await ideas.remove(props.dealId)
+    location.reload()
 }
 
 </script>

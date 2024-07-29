@@ -34,17 +34,33 @@
                         </button>
                     </form>
                     
-                    <div v-if="loader" class="absolute top-16">loading...</div>
+                    <div v-if="loader" class="absolute bottom-0 top-0 left-0 right-0">
+                        <loaderComponent />
+                    </div>
 
                     <div v-for="deal in ideas.current"
                         draggable="true"
                         class="cursor-grab"
                         @dragstart="handleDragStart(deal, card)"
                         >
-                        <div v-if="deal.status === card" class="border-b mb-4" @dblclick="openSettingsModal(deal, getStatusColor(deal.status))">
+                        <div v-if="deal.status === card" class="border-b mb-6" @dblclick="openSettingsModal(deal, getStatusColor(deal.status))">
                             <h1 :class="getStatusColor(deal.status)" class="text-xl text-center text-white">{{ deal.name }}</h1>
-                            <h4>{{ deal.description }}</h4>
-                            <h4>{{ deal.Price }}</h4>
+
+                            <div>
+                                <h3 class="text-xl text-[#151135] font-bold">Need to do: </h3>
+                                <h4 class="m-2 text-lg">{{ deal.description }}</h4>
+                                <h3 class="text-xl text-[#151135] font-bold">Price: </h3>
+                                <h4 class="m-2 text-lg">{{ deal.Price }}</h4>
+                            </div>
+                            
+                            <button 
+                                class="flex items-center gap-2 m-auto text-white bg-green-500 text-xl px-2 py-1" 
+                                v-if="deal.status === 'done'"
+                                @click="finishDeal(deal)"
+                            >
+                                <h3>finished</h3>
+                                <img src="@/assets/img/icons/finished.svg" alt="" width="20">
+                            </button>
                         </div>
 
                     </div>
@@ -55,7 +71,6 @@
                 :description="modalCompanyDescription"
                 :Price="modalCompanyPrice"
                 :toggleSettings="toggleSettings"
-                :color="getStatusColor()"
                 :dealId="modalDealId"
                 >
                 <button 
@@ -76,6 +91,7 @@ import { onMounted, ref } from 'vue';
 import { databases } from "@/appwrite";
 import { IDEAS_DATABASE_ID } from '@/stores/database';
 import { IDEAS_COLLECTION_ID } from '@/stores/database';
+import loaderComponent from '@/components/UI/loader.vue';
 
 import moduleSidebar from '@/views/moduleSidebar.vue'
 
@@ -156,5 +172,18 @@ function openSettingsModal(deal){
     modalCompanyDescription.value = deal.description
     modalCompanyPrice.value = deal.Price
     modalDealId.value = deal.$id
+}
+
+function finishDeal(deal){
+    databases.updateDocument(
+        IDEAS_DATABASE_ID,
+        IDEAS_COLLECTION_ID,
+        deal.$id,
+        {
+            status: "finished"
+        }
+    ).then(async() =>{
+        await ideas.init()
+    })
 }
 </script>
